@@ -1,4 +1,6 @@
 from sys import exit
+import random
+from time import sleep
 from numpy.random import randint, choice
 import numpy as np
 
@@ -27,6 +29,10 @@ def display_generation():
     score_rect = score_surf.get_rect(topleft=(8, 50))
     screen.blit(score_surf, score_rect)
 
+def display_remaining_players():
+    score_surf = small_game_font.render(f"remained: {len(players)}", False, (64, 64, 64))
+    score_rect = score_surf.get_rect(topleft=(8, 100))
+    screen.blit(score_surf, score_rect)
 
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, obstacle_type, position=None):
@@ -122,7 +128,8 @@ def update_fitness():
 
 
 def reset_timer_and_seed():
-    np.random.seed(35)
+    np.random.seed(53)
+    random.seed(23)
     pygame.time.set_timer(snail_timer, 500)
     pygame.time.set_timer(fly_timer, 4750)
 
@@ -136,13 +143,16 @@ if __name__ == '__main__':
     small_game_font = pygame.font.Font('Font/PixelType.ttf', 30)
     title_font = pygame.font.Font('Font/PixelType.ttf', 80)
 
+    with open(global_variables['log_file'], 'w') as f:
+        f.write('min, mean, max\n')
+
     game_active = False
     evolution = Evolution()
     generation = 1
     game_mode = None
     start_time = 0
     best_score = 0
-    num_players = 300
+    num_players = 150
 
     background_surface = pygame.image.load('Graphics/Background.jpg').convert()
 
@@ -242,6 +252,7 @@ if __name__ == '__main__':
             current_score = display_score()
             if game_mode == "Neuroevolution":
                 display_generation()
+                display_remaining_players()
                 update_fitness()
 
             if current_score > best_score:

@@ -1,4 +1,8 @@
+import imp
 import random
+from time import sleep
+
+import numpy as np
 
 import pygame
 from variables import global_variables
@@ -35,7 +39,7 @@ class Player(pygame.sprite.Sprite):
         if self.game_mode == "Neuroevolution":
             self.fitness = 0  # Initial fitness
 
-            layer_sizes = [3, 10, 2]  # TODO (Design your architecture here by changing the values)
+            layer_sizes = [12, 12, 6, 2]  # TODO (Design your architecture here by changing the values)
             self.nn = NeuralNetwork(layer_sizes)
 
     def think(self, screen_width, screen_height, obstacles, player_x, player_y):
@@ -52,12 +56,48 @@ class Player(pygame.sprite.Sprite):
         :param player_y: 'y' position of the player
         """
         # TODO (change player's gravity here by calling self.change_gravity)
+        l = 50
+        inp = np.array([
+            any(map(lambda o: player_y - 4*l < o['y'] < player_y - 3*l and o['x'] < 180, obstacles)),
+            any(map(lambda o: player_y - 4*l < o['y'] < player_y - 3*l and 180 < o['x'] < 400, obstacles)),
+            any(map(lambda o: player_y - 4*l < o['y'] < player_y - 3*l and 400 < o['x'], obstacles)),
+            any(map(lambda o: player_y - 3*l < o['y'] < player_y - 2*l and o['x'] < 180, obstacles)),
+            any(map(lambda o: player_y - 3*l < o['y'] < player_y - 2*l and 180 < o['x'] < 400, obstacles)),
+            any(map(lambda o: player_y - 3*l < o['y'] < player_y - 2*l and 400 < o['x'], obstacles)),
+            any(map(lambda o: player_y - 2*l < o['y'] < player_y - l and o['x'] < 180, obstacles)),
+            any(map(lambda o: player_y - 2*l < o['y'] < player_y - l and 180 < o['x'] < 400, obstacles)),
+            any(map(lambda o: player_y - 2*l < o['y'] < player_y - l and 400 < o['x'], obstacles)),
+            any(map(lambda o: player_y - l < o['y'] < player_y and o['x'] < 180, obstacles)),
+            any(map(lambda o: player_y - l < o['y'] < player_y and 180 < o['x'] < 400, obstacles)),
+            any(map(lambda o: player_y - l < o['y'] < player_y and 400 < o['x'], obstacles)),
+        ]).astype(int)
 
-        # This is a test code that changes the gravity based on a random number. Remove it before your implementation.
-        if random.randint(0, 2):
+        # inp = np.array([
+        #     any(map(lambda o: player_y - 3*l//2 < o['y'] < player_y - l//2 and o['x'] < 180, obstacles)),
+        #     any(map(lambda o: player_y - 3*l//2 < o['y'] < player_y - l//2 and 180 < o['x'] < 400, obstacles)),
+        #     any(map(lambda o: player_y - 3*l//2 < o['y'] < player_y - l//2 and 400 < o['x'], obstacles)),
+        #     any(map(lambda o: player_y - l//2 < o['y'] < player_y + l//2 and o['x'] < 180, obstacles)),
+        #     any(map(lambda o: player_y - l//2 < o['y'] < player_y + l//2 and 180 < o['x'] < 400, obstacles)),
+        #     any(map(lambda o: player_y - l//2 < o['y'] < player_y + l//2 and 400 < o['x'], obstacles)),
+        # ]).astype(int)
+        # print(inp.shape)
+        # print(list(map(lambda x: (x[0], x[1].shape), self.nn.params.items())))
+        # print(obstacles)
+        # print(player_x, player_y)
+        # print(inp)
+        # if (len(obstacles) > 5):
+        #     sleep(1000)
+        if np.argmax(self.nn.forward(inp)):
             self.change_gravity('left')
         else:
             self.change_gravity('right')
+        
+
+        # This is a test code that changes the gravity based on a random number. Remove it before your implementation.
+        # if random.randint(0, 2):
+        #     self.change_gravity('left')
+        # else:
+        #     self.change_gravity('right')
 
     def change_gravity(self, new_gravity):
         """
